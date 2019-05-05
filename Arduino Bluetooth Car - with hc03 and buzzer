@@ -1,0 +1,207 @@
+#include<SoftwareSerial.h>
+#define echoPin 5
+#define trigPin 6
+#define buzzerPin 7
+SoftwareSerial bt_iletisim(1, 2);
+#define sol_ileri 8
+#define sol_geri 9
+#define sol_hiz 10
+#define sag_ileri 13
+#define sag_geri 12
+#define sag_hiz 11
+
+int motorlar_hiz = 255;
+byte son_islem;
+
+void setup() {
+  pinMode(trigPin,OUTPUT);
+  pinMode(echoPin,INPUT);
+  pinMode(buzzerPin,OUTPUT);
+  pinMode(sol_ileri, OUTPUT);
+  pinMode(sag_ileri, OUTPUT);
+  pinMode(sol_geri, OUTPUT);
+  pinMode(sag_geri, OUTPUT);
+  pinMode(sol_hiz, OUTPUT);
+  pinMode(sag_hiz, OUTPUT);
+  Serial.begin(9600);
+  bt_iletisim.begin(9600);
+}
+
+void loop() {
+  int olcum=mesafe();
+  if(olcum>10){
+    if (bt_iletisim.available())
+    {
+      char data = bt_iletisim.read();
+      Serial.println(data);
+      if (data == '1')
+      {
+        dur();
+        delay(10);
+        ileri();
+      }
+      else if (data == '2')
+      {
+        dur();
+        delay(10);
+        geri();
+      }
+      else if (data == '3')
+      {
+        dur();
+        delay(10);
+        sol();
+      }
+      else if (data == '4')
+      {
+        dur();
+        delay(10);
+        sag();
+      }
+      else if (data == '6')
+      {
+        dur();
+      }
+      else if (data == '0')
+      {
+        motorlar_hiz = motorlar_hiz + 25;
+        if (motorlar_hiz > 255)
+        {
+          motorlar_hiz = 255;
+        }
+        Serial.print("motorlar hiz= ");
+        Serial.println(motorlar_hiz);
+        son_isleme_devam_et();
+      }
+      else if (data == '5')
+      {
+        motorlar_hiz = motorlar_hiz - 25;
+        if (motorlar_hiz < 0)
+        {
+          motorlar_hiz = 0;
+        }
+        Serial.print("motorlar hiz= ");
+        Serial.println(motorlar_hiz);
+        son_isleme_devam_et();
+      }
+    }
+  }
+  else{
+    melodi();
+    dur();
+    delay(10);
+    if(son_islem==1)
+      geri();
+     else if(son_islem==2)
+      ileri();
+     else if(son_islem==3){
+      sag();
+      delay(50);
+      dur();
+      delay(10);
+      ileri();
+     }
+     else if(son_islem==4){
+      sol();
+      delay(50);
+      dur();
+      delay(10);
+      ileri();
+     }
+  }
+}
+
+int mesafe(){
+    long duration,distance;
+    digitalWrite(trigPin,LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin,HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin,LOW);
+
+    duration=pulseIn(echoPin,HIGH);
+    distance=duration/58.2;
+    delay(50);
+    if(distance>=50)
+      return 50;
+    return distance;
+}
+
+int melodi(){
+  tone(buzzerPin,440);
+  delay(100);
+  noTone(buzzerPin);
+}
+
+void ileri()
+{
+  digitalWrite(sol_ileri, 1);
+  digitalWrite(sag_ileri, 1);
+  digitalWrite(sol_geri, 0);
+  digitalWrite(sag_geri, 0);
+  analogWrite(sol_hiz, motorlar_hiz);
+  analogWrite(sag_hiz, motorlar_hiz);
+  son_islem = 1;
+}
+
+void geri()
+{
+  digitalWrite(sol_ileri, 0);
+  digitalWrite(sag_ileri, 0);
+  digitalWrite(sol_geri, 1);
+  digitalWrite(sag_geri, 1);
+  analogWrite(sol_hiz, motorlar_hiz);
+  analogWrite(sag_hiz, motorlar_hiz);
+  son_islem = 2;
+}
+
+void sol()
+{
+  digitalWrite(sol_ileri, 1);
+  digitalWrite(sag_ileri, 0);
+  digitalWrite(sol_geri, 0);
+  digitalWrite(sag_geri, 1);
+  analogWrite(sol_hiz, motorlar_hiz);
+  analogWrite(sag_hiz, motorlar_hiz);
+  son_islem = 3;
+}
+
+void sag()
+{
+  digitalWrite(sol_ileri, 0);
+  digitalWrite(sag_ileri, 1);
+  digitalWrite(sol_geri, 1);
+  digitalWrite(sag_geri, 0);
+  analogWrite(sol_hiz, motorlar_hiz);
+  analogWrite(sag_hiz, motorlar_hiz);
+  son_islem = 4;
+}
+void dur()
+{
+  digitalWrite(sol_ileri, 0);
+  digitalWrite(sag_ileri, 0);
+  digitalWrite(sol_geri, 0);
+  digitalWrite(sag_geri, 0);
+  analogWrite(sol_hiz, 0);
+  analogWrite(sag_hiz, 0);
+}
+
+void son_isleme_devam_et()
+{
+  if (son_islem == 1)
+  {
+    ileri();
+  }
+  else if (son_islem == 2)
+  {
+    geri();
+  }
+  else if (son_islem == 3)
+  {
+    sol();
+  }
+  else if (son_islem == 4)
+  {
+    sag();
+  }
+}
