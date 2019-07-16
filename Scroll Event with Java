@@ -1,0 +1,54 @@
+public class Main extends Application {
+    ScrollPane scrollPane;
+    VBox vbox=new VBox();
+    AnchorPane anchorPane;
+
+    @Override
+    public void start(Stage primaryStage) throws Exception{
+        scrollPane=new ScrollPane();
+        scrollPane.setOnScroll(e->veriCek());
+        primaryStage.setTitle("Hello World");
+        primaryStage.setScene(new Scene(scrollPane, 500, 400));
+        primaryStage.show();
+        scrollPane.setContent(vbox);
+        veriCek();
+        veriCek();
+        veriCek();
+    }
+    int i=0;
+    HBox hbox;
+    private void veriCek(){
+        hbox=new HBox();
+        hbox.setAlignment(Pos.CENTER);
+        Label lblpath=new Label("PICTURE PATH "+i);
+        lblpath.setFont(Font.font(15));
+        lblpath.setPadding(new Insets(0,25,0,0));
+        ImageView imageView=new ImageView();
+        imageView.setImage(new Image("file:src/images/"+i+".jpg"));
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        TextField txtpuan=new TextField("0");
+        txtpuan.setFont(Font.font(20));
+        txtpuan.setMaxWidth(50);
+        Button btn=new Button("ADD/UPDATE");
+        btn.setOnAction(e->{
+            add(lblpath.getText(), Integer.parseInt(txtpuan.getText()));
+        });
+        hbox.getChildren().addAll(lblpath,imageView,txtpuan,btn);
+        vbox.getChildren().addAll(hbox);
+        i++;
+    }
+
+    public void add(String yol,int puan){
+        //root@127.0.0.1:3306
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("BAŞARILI");
+        alert.setContentText(yol+" yoluna "+puan +" EKLENDİ");
+        alert.showAndWait();
+    }
+
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
